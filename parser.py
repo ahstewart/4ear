@@ -5,11 +5,9 @@ Created on Thu Oct 28 16:40:30 2021
 @author: ahste
 """
 
-import numpy as np
-import librosa
 import pandas as pd
-from pytube import YouTube
 import json
+from youtube import get_aud
 
 def load_data(csv_path, csv_header):
     """
@@ -108,7 +106,6 @@ def filter_by_labels(df_to_filter, labels=[], mode="or", label_col="labels"):
     return filtered_df
     
     
-
 if __name__ == "__main__":
     parsed_df = parse_csv("C:\\Users\\ahste\\OneDrive\\ML Datasets\\AudioSet\\balanced_train_segments.csv", 
                           "C:\\Users\\ahste\\OneDrive\\ML Datasets\\AudioSet\\ontology-master\\ontology.json", 
@@ -116,3 +113,4 @@ if __name__ == "__main__":
                           label_ix_start=3, 
                           label_ix_end=0,
                           new_col_name="labels")
+    aud = get_aud(parsed_df.loc[1090])
