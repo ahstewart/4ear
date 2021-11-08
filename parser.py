@@ -38,7 +38,7 @@ def labels2str(row, ont):
     NaN values are ignored.
     """
     row_l = list(row)
-    row_names = [ont[i.strip()] for i in row_l if isinstance(i, str)]
+    row_names = [str('"' + ont[i.strip()] + '"') for i in row_l if isinstance(i, str)]
     return ", ".join(row_names)
 
 def labels(df, ont):
@@ -55,7 +55,7 @@ def parse_csv(csv_loc, ont_loc, csv_head=2, label_ix_start=3, label_ix_end=0, ne
     Combines all of the above funcs to load the csv and ontology, create a new
     Series of label name strings, then tack on this new Series to the end of 
     the DataFrame.
-    Returns the same DataFrame as load_data() with an extra "Labels" column
+    Returns the same DataFrame as load_data() with an extra "labels" column
     added onto the end.
     """
     data = load_data(csv_loc, csv_head)
@@ -65,6 +65,48 @@ def parse_csv(csv_loc, ont_loc, csv_head=2, label_ix_start=3, label_ix_end=0, ne
     else:
         data[new_col_name] = labels(data.iloc[:,label_ix_start:label_ix_end], ont_dict)
     return data
+
+def filter_by_labels(df_to_filter, labels=[], mode="or", label_col="labels"):
+    """
+    Returns a new DataFrame that is filtered by the given labels in label_col.
+    Modes:
+        or = selects rows that contain one or more of the provided labels
+        and = selects rows that contain all of the provided labels
+        only = selects rows that only contain the provided labels
+        not = selects rows that do not contain any of the provided labels
+    """
+    if mode == "or":
+        dfs = list(range(len(labels)))
+        count = 0
+        for l in labels:
+            dfs[count] = df_to_filter[df_to_filter[label_col].str.contains('"'+l+'"')]
+            count += 1
+        filtered_df = pd.concat(dfs)
+    elif mode == "and":
+        for l in labels:
+            if labels.index(l) == 0:
+                dfs = df_to_filter[df_to_filter[label_col].str.contains('"'+l+'"')]
+            else:
+                dfs = dfs[dfs[label_col].str.contains('"'+l+'"')]
+        filtered_df = dfs
+    elif mode == "only":
+        # sort target labels alphabetically then join into a commma-separated list
+        label_list = ['"'+i+'"' for i in labels]
+        label_list.sort()
+        label_str = ", ".join(label_list)
+        # create new column of sorted string of labels
+        df_to_filter["temp_label_list"] = [", ".join(sorted(i.split(", "))) for i in df_to_filter[label_col]]
+        filtered_df = df_to_filter[df_to_filter["temp_label_list"] == label_str]
+        filtered_df = filtered_df.drop(columns=["temp_label_list"])
+    elif mode == "not":
+        for l in labels:
+            if labels.index(l) == 0:
+                dfs = df_to_filter[~df_to_filter[label_col].str.contains('"'+l+'"')]
+            else:
+                dfs = dfs[~dfs[label_col].str.contains('"'+l+'"')]
+            filtered_df = dfs
+    return filtered_df
+    
     
 
 if __name__ == "__main__":
