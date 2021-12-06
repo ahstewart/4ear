@@ -8,6 +8,7 @@ Created on Thu Oct 28 16:40:30 2021
 import pandas as pd
 import json
 from youtube import get_aud
+import sys
 
 def load_data(csv_path, csv_header):
     """
@@ -64,6 +65,21 @@ def parse_csv(csv_loc, ont_loc, csv_head=2, label_ix_start=3, label_ix_end=0, ne
         data[new_col_name] = labels(data.iloc[:,label_ix_start:label_ix_end], ont_dict)
     return data
 
+def ont_subset2list(ont_subset_path):
+    """
+    Converts a subset of a JSON AudioSet Ontology into a list of labels.
+    Returns the label list.
+    For use in the filter_by_labels() function.
+    """
+    try:
+        f = open(ont_subset_path)
+        subset = json.load(f)
+        subset_list = [i["name"].split(",") for i in subset[1:]]
+        return [name.strip() for sublist in subset_list for name in sublist]
+    except FileNotFoundError:
+        print("JSON ontology subset file not found, check labels parameter. Should be a list of lists except for JSON paths")
+        sys.exit()
+
 def filter_by_labels(df_to_filter, labels=[], mode="or", label_col="labels"):
     """
     Returns a new DataFrame that is filtered by the given labels in label_col.
@@ -73,6 +89,8 @@ def filter_by_labels(df_to_filter, labels=[], mode="or", label_col="labels"):
         only = selects rows that only contain the provided labels
         not = selects rows that do not contain any of the provided labels
     """
+    if isinstance(labels, str):
+        labels = ont_subset2list(labels)
     if mode == "or":
         dfs = list(range(len(labels)))
         count = 0
@@ -113,4 +131,3 @@ if __name__ == "__main__":
                           label_ix_start=3, 
                           label_ix_end=0,
                           new_col_name="labels")
-    aud = get_aud(parsed_df.loc[1090])

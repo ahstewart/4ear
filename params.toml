@@ -1,0 +1,39 @@
+[paths]
+data_dir_loc = "C:/Users/ahste/OneDrive/ENTRP/4ear/Code/4ear_explore/data"
+
+[audio]
+sample_rate = 44100		# in Hz
+duration = 10    		# in seconds
+mono = true			# if true all clips are converted to mono
+
+[df_parsing]
+id_column = "YTID"
+start_column = " start_seconds"
+end_column = " end_seconds"
+
+
+[dataset]
+create_dataset = true
+dataset_name = "machine_or_not"
+dataset_dir = "C:/Users/ahste/OneDrive/ML Datasets/AudioSet/datasets"
+format = "mp3"
+classes = ["machine", "not_machine"]
+use_ont_subset = true
+pull_keywords = ["C:/Users/ahste/OneDrive/ML Datasets/AudioSet/ontology-master/subset_machines.json", "C:/Users/ahste/OneDrive/ML Datasets/AudioSet/ontology-master/subset_machines.json"]
+pull_modes = ["or", "not"]
+label_column = "labels"
+max_samples = 0
+
+
+[model]
+data_rep = "spect"		# representation of the audio data: "spect", "waveform", "wavelet"
+
+
+[spectrogram]
+n_fft = 2048
+hop_length = 512
+win_length = 2048
+win_func = "haan"
+center = true
+pad_mode = "reflect"
+
