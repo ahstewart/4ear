@@ -1,39 +1,120 @@
-[paths]
-data_dir_loc = "C:/Users/ahste/OneDrive/ENTRP/4ear/Code/4ear_explore/data"
-
-[audio]
-sample_rate = 44100		# in Hz
-duration = 10    		# in seconds
-mono = true			# if true all clips are converted to mono
-
-[df_parsing]
-id_column = "YTID"
-start_column = " start_seconds"
-end_column = " end_seconds"
-
-
-[dataset]
-create_dataset = true
-dataset_name = "machine_or_not"
+[data]
+origin = "tfrecords"			# "audioset_csv", "files", "tfrecords"
 dataset_dir = "C:/Users/ahste/OneDrive/ML Datasets/AudioSet/datasets"
-format = "mp3"
-classes = ["machine", "not_machine"]
-use_ont_subset = true
-pull_keywords = ["C:/Users/ahste/OneDrive/ML Datasets/AudioSet/ontology-master/subset_machines.json", "C:/Users/ahste/OneDrive/ML Datasets/AudioSet/ontology-master/subset_machines.json"]
-pull_modes = ["or", "not"]
-label_column = "labels"
-max_samples = 0
+dataset_name = "cars_or_not"
+shard_dir_name = "shards"
+shard_name = "TFrecord_shard"
+sample_rate = 44100
+duration = 10
+final_format = "waveform"		# "waveform", "spect", "mel_spect"
+n_epochs = 30
+train_cut = 0.75
+valid_cut = 0.15
+test_cut = 0.10
+shuffle_yn = true
+random_seed = 42
+batch_size = 4
+val_test_batch_size = 4
 
+	[data.audioset_csv]
+	csv_loc = "C:\\Users\\ahste\\OneDrive\\ML Datasets\\AudioSet\\balanced_train_segments.csv"		# path and name of the csv file
+	ont_loc = "C:\\Users\\ahste\\OneDrive\\ML Datasets\\AudioSet\\ontology-master\\ontology.json"	# path and name of the ontology file
+	csv_head = 2 
+	label_ix_start = 3
+	label_ix_end = 0
+	format = "mp3"
+	classes = ["car", "not_car"]
+	pull_keywords = ["C:\\Users\\ahste\\OneDrive\\ML Datasets\\AudioSet\\ontology-master\\cars.json", "C:\\Users\\ahste\\OneDrive\\ML Datasets\\AudioSet\\ontology-master\\cars.json"]
+	pull_modes = ["or", "not"]
+	max_items = [1000, 1000]
+	label_column = "labels"
+	max_samples = 0
+	id_column = "YTID"
+	start_column = " start_seconds"
+	end_column = " end_seconds"
+
+	[data.files]
+	max_shard_size = 200			# maximum shard size allowed in MB
+	compression_scaling_factor = 4		# factor to account for the TFRecord file compression
+
+	[data.spect]
+	n_fft = 2048
+	hop_length = 512
+	win_length = 2048
+	win_func = "hann"
+	center = true
+	pad_mode = "reflect"
+	power = 2.0
 
 [model]
-data_rep = "spect"		# representation of the audio data: "spect", "waveform", "wavelet"
+learning_rate = 0.0001
 
+	[model.kapre_mel_spect]
+	n_fft = 2048
+	win_length = 512
+	hop_length = "none"
+	window_name = "none"
+	pad_begin = false
+	pad_end = false
+	n_mels = 60
+	mel_f_min = 0
+	mel_f_max = "none"
+	mel_htk = false
+	mel_norm = "slaney"
+	return_decibel = false
+	db_amin = 0.00001
+	db_ref_value = 1.0
+	db_dynamic_range = 80.0
+	input_data_format = "default"
+	output_data_format = "default"
 
-[spectrogram]
-n_fft = 2048
-hop_length = 512
-win_length = 2048
-win_func = "haan"
-center = true
-pad_mode = "reflect"
+	[model.kapre_delta]
+	win_length = 5
+	mode = "symmetric"
+	data_format = "default"
+
+	[model.kapre_frame]
+	frame_length = 41
+	hop_length = 64
+	pad_end = false
+	pad_value = 0
+	data_format = "default"
+
+	[model.kapre_ms_classification]
+		[model.kapre_ms_classification.cnn_block1]
+		filters = 24
+		kernel_size = [3,3]
+		padding = "same"
+		activation = "relu"
+		dropout_rate = 0.1
+		pool_size = [2,2,2]
+
+		[model.kapre_ms_classification.cnn_block2]
+		filters = 32
+		kernel_size = [3,3]
+		padding = "same"
+		activation = "relu"
+		dropout_rate = 0.1
+		pool_size = [2,2,2]
+
+		[model.kapre_ms_classification.cnn_block3]
+		filters = 64
+		kernel_size = [3,3]
+		padding = "same"
+		activation = "relu"
+		dropout_rate = 0.1
+		pool_size = [2,2,2]
+
+		[model.kapre_ms_classification.cnn_block4]
+		filters = 128
+		kernel_size = [3,3]
+		padding = "same"
+		activation = "relu"
+		dropout_rate = 0.1
+
+		[model.kapre_ms_classification.final_dense]
+		dropout_rate = 0.5
+		num_units = 518
+		activation = "relu"
+		final_activation = "softmax"
 

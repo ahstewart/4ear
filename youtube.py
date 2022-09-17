@@ -14,6 +14,7 @@ youtube_url_prefix = "http://youtube.com/watch?v="
 cwd = os.getcwd()
 temp_filename = "temp.mp4"
 
+
 def get_aud(df_row, sample_rate, dur, id_col='YTID', start_col=' start_seconds', 
             end_col=' end_seconds', stream_index=0, mono=True):
     youtube_id = df_row[id_col]
@@ -31,15 +32,18 @@ def get_aud(df_row, sample_rate, dur, id_col='YTID', start_col=' start_seconds',
     os.remove(wav_file)
     return audio
 
+
 def make_spect(aud, n_fft, hop_length, win_length, win_func, center, pad_mode):
     return librosa.stft(aud, n_fft=n_fft, hop_length=hop_length, 
                         win_length=win_length, window=win_func, center=center,
                         pad_mode=pad_mode)
 
-def download_waveform(df_row, path, id_col='YTID', start_col=' start_seconds', 
-                 end_col=' end_seconds', stream_index=0):
+
+def download_waveform(df_row, path, id_col='YTID', start_col=' start_seconds',
+                      end_col=' end_seconds', stream_index=0, file_format='mp3'):
     youtube_id = df_row[id_col]
     url = youtube_url_prefix + youtube_id
+    fail_count = 0
     try:
         vid = YouTube(url)
         audio_stream = vid.streams.filter(only_audio=True, file_extension='mp4').first()
@@ -47,12 +51,14 @@ def download_waveform(df_row, path, id_col='YTID', start_col=' start_seconds',
         base, ext = os.path.splitext(out_file)
         start = str(datetime.timedelta(seconds=(df_row[start_col])))
         duration = str(datetime.timedelta(seconds=(df_row[end_col]-df_row[start_col])))
-        mp3_file = base + ".mp3"
-        os.system(f"ffmpeg -i \"{out_file}\" -ss {start} -t {duration} \"{mp3_file}\"")
+        final_file = base + f".{file_format}"
+        os.system(f"ffmpeg -i \"{out_file}\" -ss {start} -t {duration} \"{final_file}\" -hide_banner -loglevel error")
         os.remove(out_file)
     except Exception as e:
-        #print("No matching YouTube clip found... Skipping record")
-        print(e)
+        # print("\n\tNo matching YouTube clip found... Skipping record")
+        # print("\n\tVideo with YouTube ID " + str(e))
+        pass
+
 
 def create_waveform_ds(df, download_func, path, id_col='YTID', start_col=' start_seconds', 
                  end_col=' end_seconds', stream_index=0):
