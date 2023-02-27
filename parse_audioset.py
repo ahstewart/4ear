@@ -16,7 +16,7 @@ def load_data(csv_path, csv_header):
     Reads the audioset csv into a Pandas DataFrame.
     csv_header = the row that has the column headers (zero_indexed), default is 2
     """
-    return pd.read_csv(csv_path, header=csv_header)
+    return pd.read_csv(csv_path, header=csv_header, on_bad_lines="skip")
 
 
 def parse_ont(ont_path):

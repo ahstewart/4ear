@@ -52,6 +52,33 @@ class Model:
 
     def m_waveform_classification(self):
         pass
+
+    def spect_ae_basic(self, optimizer=tf.keras.optimizers.Adam(), loss=tf.keras.losses.MeanSquaredError,
+                       metrics=['accuracy']):
+        print(self.spect_shape)
+
+        input_img = keras.Input(shape=self.spect_shape)
+
+        x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(input_img)
+        x = layers.MaxPooling2D((2, 2), padding='same')(x)
+        x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+        x = layers.MaxPooling2D((2, 2), padding='same')(x)
+        x = layers.Conv2D(32, (3, 3), activation='relu', padding='same')(x)
+        encoded = layers.MaxPooling2D((2, 2), padding='same')(x)
+
+        x = layers.Conv2D(32, (3, 3), activation='relu', padding='same')(encoded)
+        x = layers.UpSampling2D((2, 2))(x)
+        x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+        x = layers.UpSampling2D((2, 2))(x)
+        x = layers.Conv2D(128, (3, 3), activation='relu')(x)
+        x = layers.UpSampling2D((2, 2))(x)
+        decoded = layers.Conv2D(1, (3, 3), activation='sigmoid', padding='same')(x)
+
+        model = keras.Model(input_img, decoded)
+
+        model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+
+        return model
     
     def m_spect_classification(self, optimizer=tf.keras.optimizers.Adam(),
                                loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
@@ -172,6 +199,44 @@ class Model:
 
         return model
 
+    def kapre_mel_spect_ae_basic(self, optimizer=tf.keras.optimizers.Adam(),
+                                       loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+                                       metrics=["accuracy"]):
+        print("\nCompiling model...")
+        input_ = layers.Input(shape=self.waveform_shape)
+
+        mel_layer = get_melspectrogram_layer(n_fft=self.params['model']['kapre_mel_spect']['n_fft'],
+                                             win_length=self.params['model']['kapre_mel_spect']['win_length'],
+                                             hop_length=self.params['model']['kapre_mel_spect']['hop_length'],
+                                             window_name=self.params['model']['kapre_mel_spect']['window_name'],
+                                             pad_begin=self.params['model']['kapre_mel_spect']['pad_begin'],
+                                             pad_end=self.params['model']['kapre_mel_spect']['pad_end'],
+                                             sample_rate=self.sample_rate,
+                                             n_mels=self.params['model']['kapre_mel_spect']['n_mels'],
+                                             mel_f_min=self.params['model']['kapre_mel_spect']['mel_f_min'],
+                                             mel_f_max=self.params['model']['kapre_mel_spect']['mel_f_max'],
+                                             mel_htk=self.params['model']['kapre_mel_spect']['mel_htk'],
+                                             mel_norm=self.params['model']['kapre_mel_spect']['mel_norm'],
+                                             return_decibel=self.params['model']['kapre_mel_spect']['return_decibel'],
+                                             db_amin=self.params['model']['kapre_mel_spect']['db_amin'],
+                                             db_ref_value=self.params['model']['kapre_mel_spect']['db_ref_value'],
+                                             db_dynamic_range=self.params['model']['kapre_mel_spect'][
+                                                 'db_dynamic_range'],
+                                             input_data_format=self.params['model']['kapre_mel_spect'][
+                                                 'input_data_format'],
+                                             output_data_format=self.params['model']['kapre_mel_spect'][
+                                                 'output_data_format'])(input_)
+
+
+
+        model = keras.Model(inputs=[input_], outputs=[x], name="kapre_mel_spect_classification")
+
+        model.compile(optimizer=tf.keras.optimizers.Adam(self.learning_rate), loss=loss, metrics=metrics)
+
+        print("Model compiled successfully!")
+
+        return model
+
     def fit_model(self, model, callbacks=None):
         print("\nFitting model...")
         return model.fit(self.train_data, epochs=self.n_epochs, validation_data=self.val_data,
@@ -188,5 +253,5 @@ if __name__ == '__main__':
     dd = ds_obj.dd
     ds = ds_obj.ds
     model_obj = Model(dd, ds, params)
-    class_model = model_obj.kapre_mel_spect_classification()
+    class_model = model_obj.spect_ae_basic()
     class_model_fit_metrics = model_obj.fit_model(class_model)

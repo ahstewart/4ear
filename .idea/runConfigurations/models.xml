@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="models" type="PythonConfigurationType" factoryName="Python" singleton="false" nameIsGenerated="true">
+  <configuration default="false" name="models" type="PythonConfigurationType" factoryName="Python" singleton="false">
     <module name="4ear_explore" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />

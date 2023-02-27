@@ -20,6 +20,6 @@ dd = ds_obj.dd
 ds = ds_obj.ds
 
 # input dataset objects into Model
-model_obj = Model(dd, ds, params)
-class_model = model_obj.kapre_mel_spect_classification()
-class_model_fit_metrics = model_obj.fit_model(class_model)
+##model_obj = Model(dd, ds, params)
+##class_model = model_obj.kapre_mel_spect_classification()
+##class_model_fit_metrics = model_obj.fit_model(class_model)

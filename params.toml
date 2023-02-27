@@ -1,12 +1,12 @@
 [data]
 origin = "tfrecords"			# "audioset_csv", "files", "tfrecords"
 dataset_dir = "C:/Users/ahste/OneDrive/ML Datasets/AudioSet/datasets"
-dataset_name = "cars_or_not"
+dataset_name = "engine_idling"
 shard_dir_name = "shards"
 shard_name = "TFrecord_shard"
 sample_rate = 44100
 duration = 10
-final_format = "waveform"		# "waveform", "spect", "mel_spect"
+final_format = "spect"		# "waveform", "spect", "mel_spect"
 n_epochs = 30
 train_cut = 0.75
 valid_cut = 0.15
@@ -19,14 +19,14 @@ val_test_batch_size = 4
 	[data.audioset_csv]
 	csv_loc = "C:\\Users\\ahste\\OneDrive\\ML Datasets\\AudioSet\\balanced_train_segments.csv"		# path and name of the csv file
 	ont_loc = "C:\\Users\\ahste\\OneDrive\\ML Datasets\\AudioSet\\ontology-master\\ontology.json"	# path and name of the ontology file
-	csv_head = 2 
+	csv_head = 2
 	label_ix_start = 3
 	label_ix_end = 0
 	format = "mp3"
-	classes = ["car", "not_car"]
-	pull_keywords = ["C:\\Users\\ahste\\OneDrive\\ML Datasets\\AudioSet\\ontology-master\\cars.json", "C:\\Users\\ahste\\OneDrive\\ML Datasets\\AudioSet\\ontology-master\\cars.json"]
-	pull_modes = ["or", "not"]
-	max_items = [1000, 1000]
+	classes = ["idling"]
+	pull_keywords = ["C:\\Users\\ahste\\OneDrive\\ML Datasets\\AudioSet\\ontology-master\\engine-idling.json"]
+	pull_modes = ["or"]
+	max_items = [1000]
 	label_column = "labels"
 	max_samples = 0
 	id_column = "YTID"
@@ -118,3 +118,8 @@ learning_rate = 0.0001
 		activation = "relu"
 		final_activation = "softmax"
 
+	[model.ae_basic_conv]
+	latent_dim = 64
+	padding = "same"
+	activation = "relu"
+	dropout_rate = 0.1
